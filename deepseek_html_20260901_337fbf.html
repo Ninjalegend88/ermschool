@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Google Classroom</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    
+    #passwordWall {
+      position: fixed;
+      inset: 0;
+      background: linear-gradient(135deg, #1a73e8, #0d47a1);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 99999;
+    }
+
+    .pw-box {
+      background: white;
+      border-radius: 16px;
+      padding: 40px 36px;
+      max-width: 380px;
+      width: 90%;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+      text-align: center;
+    }
+
+    .pw-box svg {
+      margin-bottom: 16px;
+    }
+
+    .pw-box h2 {
+      font-family: 'Google Sans', Arial, sans-serif;
+      font-size: 22px;
+      color: #1a73e8;
+      margin-bottom: 6px;
+    }
+
+    .pw-box p {
+      font-size: 13px;
+      color: #9aa0a6;
+      margin-bottom: 24px;
+    }
+
+    .pw-box input {
+      width: 100%;
+      padding: 12px 16px;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 15px;
+      outline: none;
+      transition: border 0.2s;
+      margin-bottom: 14px;
+      font-family: Arial, sans-serif;
+    }
+
+    .pw-box input:focus {
+      border-color: #1a73e8;
+    }
+
+    .pw-box button {
+      width: 100%;
+      padding: 12px;
+      background: #1a73e8;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .pw-box button:hover { background: #1557b0; }
+
+    .pw-error {
+      color: #ea4335;
+      font-size: 13px;
+      margin-top: 10px;
+      min-height: 18px;
+    }
+
+    body {
+      font-family: 'Google Sans', Arial, sans-serif;
+      background: #f1f3f4;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    header {
+      background: #1a73e8;
+      color: white;
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+      position: relative;
+      z-index: 100;
+    }
+
+    header span {
+      font-size: 22px;
+      font-weight: bold;
+      letter-spacing: 0.5px;
+    }
+
+    .nav-bar {
+      background: white;
+      padding: 10px 24px;
+      display: flex;
+      gap: 20px;
+      border-bottom: 1px solid #e0e0e0;
+      font-size: 14px;
+      color: #5f6368;
+      align-items: center;
+      position: relative;
+      z-index: 100;
+    }
+
+    .nav-bar span {
+      cursor: pointer;
+      padding: 6px 10px;
+      border-radius: 4px;
+      transition: background 0.2s;
+    }
+
+    .nav-bar span:hover { background: #f1f3f4; }
+
+    .nav-bar span.active {
+      color: #1a73e8;
+      font-weight: bold;
+      border-bottom: 2px solid #1a73e8;
+      border-radius: 0;
+    }
+
+    .home-btn {
+      margin-left: auto;
+      background: #1a73e8;
+      color: white !important;
+      border-radius: 8px !important;
+      padding: 6px 16px !important;
+      font-weight: bold !important;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: background 0.2s !important;
+    }
+
+    .home-btn:hover { background: #1557b0 !important; }
+
+    .main-content {
+      height: calc(100vh - 108px);
+      overflow-y: auto;
+    }
+
+    .container {
+      max-width: 960px;
+      margin: 30px auto;
+      padding: 0 20px;
+    }
+
+    .welcome-banner {
+      background: linear-gradient(135deg, #1a73e8, #0d47a1);
+      color: white;
+      border-radius: 12px;
+      padding: 30px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+
+    .welcome-banner h1 { font-size: 26px; margin-bottom: 8px; }
+    .welcome-banner p  { font-size: 14px; opacity: 0.85; }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+
+    .card {
+      background: white;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      transition: transform 0.2s, box-shadow 0.2s;
+      cursor: pointer;
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+    }
+
+    .card-header {
+      height: 100px;
+      display: flex;
+      align-items: flex-end;
+      padding: 14px;
+      font-size: 18px;
+      font-weight: bold;
+      color: white;
+    }
+
+    .card-header.blue   { background: linear-gradient(135deg, #1a73e8, #0d47a1); }
+    .card-header.green  { background: linear-gradient(135deg, #34a853, #1e7e34); }
+    .card-header.red    { background: linear-gradient(135deg, #ea4335, #b31412); }
+    .card-header.purple { background: linear-gradient(135deg, #9c27b0, #6a0080); }
+
+    .card-body { padding: 16px; }
+    .card-body p { font-size: 13px; color: #5f6368; margin-bottom: 12px; }
+
+    .tag {
+      display: inline-block;
+      background: #e8f0fe;
+      color: #1a73e8;
+      border-radius: 20px;
+      padding: 4px 12px;
+      font-size: 12px;
+      font-weight: bold;
+    }
+
+    .announcements {
+      background: white;
+      border-radius: 12px;
+      padding: 20px 24px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      margin-bottom: 30px;
+    }
+
+    .announcements h3 {
+      font-size: 16px;
+      color: #3c4043;
+      margin-bottom: 14px;
+      border-bottom: 1px solid #e0e0e0;
+      padding-bottom: 10px;
+    }
+
+    .announcement-item {
+      display: flex;
+      gap: 14px;
+      padding: 12px 0;
+      border-bottom: 1px solid #f1f3f4;
+    }
+
+    .announcement-item:last-child { border-bottom: none; }
+
+    .avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      color: white;
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+
+    .avatar.blue  { background: #1a73e8; }
+    .avatar.green { background: #34a853; }
+    .avatar.red   { background: #ea4335; }
+
+    .announcement-text strong { font-size: 14px; color: #3c4043; }
+    .announcement-text p      { font-size: 13px; color: #5f6368; margin-top: 4px; }
+    .announcement-text span   { font-size: 11px; color: #9aa0a6; }
+
+    footer {
+      text-align: center;
+      padding: 20px;
+      font-size: 12px;
+      color: #9aa0a6;
+    }
+
+    .iframe-container {
+      display: none;
+      position: fixed;
+      top: 108px;
+      left: 0; right: 0; bottom: 0;
+      z-index: 50;
+      background: white;
+      flex-direction: column;
+    }
+
+    .iframe-container.show { display: flex; }
+
+    .iframe-toolbar {
+      background: #1a73e8;
+      color: white;
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 14px;
+      font-weight: bold;
+      flex-shrink: 0;
+    }
+
+    .iframe-toolbar .url-bar {
+      background: rgba(255,255,255,0.15);
+      border-radius: 6px;
+      padding: 5px 12px;
+      font-size: 12px;
+      font-weight: normal;
+      color: rgba(255,255,255,0.85);
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .iframe-toolbar .close-btn {
+      background: rgba(255,255,255,0.2);
+      border: none;
+      color: white;
+      border-radius: 6px;
+      padding: 6px 14px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: bold;
+      transition: background 0.2s;
+    }
+
+    .iframe-toolbar .close-btn:hover { background: rgba(255,255,255,0.35); }
+
+    iframe { flex: 1; border: none; width: 100%; }
+
+    .iframe-fab-home {
+      display: none;
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      background: #1a73e8;
+      color: white;
+      border: none;
+      border-radius: 50px;
+      padding: 14px 22px;
+      font-size: 14px;
+      font-weight: bold;
+      cursor: pointer;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 4px 20px rgba(26,115,232,0.6);
+      transition: background 0.2s, transform 0.2s;
+      z-index: 9997;
+    }
+
+    .iframe-fab-home.show { display: flex; }
+    .iframe-fab-home:hover { background: #1557b0; transform: scale(1.05); }
+    .iframe-fab-home svg { width: 18px; height: 18px; fill: white; }
+
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.45);
+      z-index: 9998;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .modal-overlay.show { display: flex; }
+
+    .modal {
+      background: white;
+      border-radius: 16px;
+      padding: 32px 36px;
+      max-width: 460px;
+      width: 90%;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+      animation: popIn 0.25s ease;
+      position: relative;
+    }
+
+    @keyframes popIn {
+      from { transform: scale(0.85); opacity: 0; }
+      to   { transform: scale(1);    opacity: 1; }
+    }
+
+    .modal h2     { font-size: 20px; color: #1a73e8; margin-bottom: 6px; }
+    .modal .subtitle { font-size: 13px; color: #9aa0a6; margin-bottom: 24px; }
+
+    .shortcut-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 16px;
+      font-size: 14px;
+      color: #3c4043;
+    }
+
+    .shortcut-item .desc { color: #5f6368; margin-left: 4px; }
+
+    kbd {
+      background: #f1f3f4;
+      border: 1px solid #dadce0;
+      border-radius: 4px;
+      padding: 5px 11px;
+      font-family: monospace;
+      font-size: 13px;
+      color: #3c4043;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+      white-space: nowrap;
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 14px; right: 18px;
+      font-size: 22px;
+      color: #9aa0a6;
+      cursor: pointer;
+      background: none;
+      border: none;
+      line-height: 1;
+    }
+
+    .modal-close:hover { color: #3c4043; }
+
+    .modal-footer-text {
+      margin-top: 20px;
+      font-size: 12px;
+      color: #9aa0a6;
+      text-align: center;
+    }
+
+    .divider { border: none; border-top: 1px solid #e0e0e0; margin: 18px 0; }
+
+    .toast {
+      position: fixed;
+      bottom: 100px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: #323232;
+      color: white;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 14px;
+      z-index: 9999;
+      transition: transform 0.3s ease;
+      pointer-events: none;
+    }
+
+    .toast.show { transform: translateX(-50%) translateY(0); }
+  </style>
+</head>
+<body>
+
+  <!-- PASSWORD WALL -->
+  <div id="passwordWall">
+    <div class="pw-box">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48">
+        <path fill="#1a73e8" d="M39 10H9a2 2 0 0 0-2 2v24a2 2 0 0 0 2 2h30a2 2 0 0 0 2-2V12a2 2 0 0 0-2-2zm0 26H9V18h30z"/>
+        <rect fill="#1a73e8" x="14" y="6" width="4" height="8" rx="2"/>
+        <rect fill="#1a73e8" x="30" y="6" width="4" height="8" rx="2"/>
+      </svg>
+      <h2>Google Classroom</h2>
+      <p>Enter your access password to continue</p>
+      <input type="password" id="pwInput" placeholder="Password" onkeydown="if(event.key==='Enter') checkPassword()" />
+      <button onclick="checkPassword()">Sign In</button>
+      <div class="pw-error" id="pwError"></div>
+    </div>
+  </div>
+
+  <header>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="32" height="32">
+      <path fill="#fff" d="M39 18H9v22h30z"/>
+      <path fill="#1a73e8" d="M39 10H9a2 2 0 0 0-2 2v24a2 2 0 0 0 2 2h30a2 2 0 0 0 2-2V12a2 2 0 0 0-2-2zm0 26H9V18h30z"/>
+      <rect fill="#1a73e8" x="14" y="6" width="4" height="8" rx="2"/>
+      <rect fill="#1a73e8" x="30" y="6" width="4" height="8" rx="2"/>
+      <rect fill="#e8f0fe" x="13" y="22" width="8" height="2" rx="1"/>
+      <rect fill="#e8f0fe" x="13" y="27" width="14" height="2" rx="1"/>
+      <rect fill="#e8f0fe" x="13" y="32" width="10" height="2" rx="1"/>
+    </svg>
+    <span>Google Classroom</span>
+  </header>
+
+  <div class="nav-bar">
+    <span class="active">Home</span>
+    <span>Calendar</span>
+    <span>To-do</span>
+    <span>Archived Classes</span>
+    <span class="home-btn" onclick="goHome()">🏠 Home</span>
+  </div>
+
+  <div class="main-content" id="mainContent">
+    <div class="container">
+
+      <div class="welcome-banner">
+        <h1>Welcome back! 👋</h1>
+        <p>You have upcoming assignments and new announcements in your classes.</p>
+      </div>
+
+      <div class="grid">
+        <div class="card">
+          <div class="card-header blue">Mathematics</div>
+          <div class="card-body">
+            <p>Period 3 · Mr. Johnson</p>
+            <span class="tag">2 due soon</span>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header green">Science</div>
+          <div class="card-body">
+            <p>Period 1 · Ms. Rivera</p>
+            <span class="tag">Assignment posted</span>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header red">English</div>
+          <div class="card-body">
+            <p>Period 5 · Mrs. Thompson</p>
+            <span class="tag">Graded</span>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header purple">History</div>
+          <div class="card-body">
+            <p>Period 2 · Mr. Davis</p>
+            <span class="tag">Quiz tomorrow</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="announcements">
+        <h3>📢 Recent Announcements</h3>
+        <div class="announcement-item">
+          <div class="avatar blue">J</div>
+          <div class="announcement-text">
+            <strong>Mr. Johnson</strong>
+            <span> · 2 hours ago</span>
+            <p>Don't forget to complete Chapter 7 review before Friday's test!</p>
+          </div>
+        </div>
+        <div class="announcement-item">
+          <div class="avatar green">R</div>
+          <div class="announcement-text">
+            <strong>Ms. Rivera</strong>
+            <span> · Yesterday</span>
+            <p>Lab reports are due Monday. Make sure to include your hypothesis and conclusion.</p>
+          </div>
+        </div>
+        <div class="announcement-item">
+          <div class="avatar red">T</div>
+          <div class="announcement-text">
+            <strong>Mrs. Thompson</strong>
+            <span> · 2 days ago</span>
+            <p>Essay drafts have been graded. Please check your feedback and revise accordingly.</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+    <footer>Google Classroom · Privacy · Terms</footer>
+  </div>
+
+  <!-- IFRAME CONTAINER -->
+  <div class="iframe-container" id="iframeContainer">
+    <div class="iframe-toolbar">
+      <span id="iframeTitle">Resource</span>
+      <div class="url-bar" id="iframeUrl"></div>
+      <button class="close-btn" onclick="closeIframe()">✕ Close</button>
+    </div>
+    <iframe id="mainIframe" src="" allowfullscreen></iframe>
+  </div>
+
+  <button class="iframe-fab-home" id="iframeFabHome" onclick="closeIframe()">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+      <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+    </svg>
+    Back to Classroom
+  </button>
+
+  <!-- SHORTCUTS MODAL -->
+  <div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+    <div class="modal">
+      <button class="modal-close" onclick="hideModal()">✕</button>
+      <h2>⌨️ Keyboard Shortcuts</h2>
+      <p class="subtitle">Press <strong>C</strong> anytime to toggle this panel · <strong>Esc</strong> to close</p>
+      <hr class="divider"/>
+      <div class="shortcut-item">
+        <kbd>Ctrl</kbd> + <kbd>Alt</kbd> + <kbd>Y</kbd>
+        <span class="desc">→ Open Resource 1 (inside page)</span>
+      </div>
+      <div class="shortcut-item">
+        <kbd>Ctrl</kbd> + <kbd>Alt</kbd> + <kbd>U</kbd>
+        <span class="desc">→ Open Resource 2 (inside page)</span>
+      </div>
+      <div class="shortcut-item">
+        <kbd>Ctrl</kbd> + <kbd>Alt</kbd> + <kbd>M</kbd>
+        <span class="desc">→ Open Resource 3 (inside page)</span>
+      </div>
+      <div class="shortcut-item">
+        <kbd>Ctrl</kbd> + <kbd>Alt</kbd> + <kbd>H</kbd>
+        <span class="desc">→ Go Home / Close resource</span>
+      </div>
+      <hr class="divider"/>
+      <p class="modal-footer-text">Press anywhere outside to close</p>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    
+    const CORRECT_HASH = 'b3c4c8c3e1a2f7d9e5b6a1c2f3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2';
+
+    async function hashPassword(password) {
+      const encoder = new TextEncoder();
+      const data = encoder.encode(password);
+      const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+
+    async function checkPassword() {
+      const input = document.getElementById('pwInput').value;
+      const errorEl = document.getElementById('pwError');
+
+      if (!input) {
+        errorEl.textContent = 'Please enter a password.';
+        return;
+      }
+
+      const hash = await hashPassword(input);
+
+      const correctHash = await hashPassword('Classroom2024!');
+
+      if (hash === correctHash) {
+        document.getElementById('passwordWall').style.display = 'none';
+        showToast('Welcome to Google Classroom! 👋');
+      } else {
+        errorEl.textContent = '❌ Incorrect password. Try again.';
+        document.getElementById('pwInput').value = '';
+        document.getElementById('pwInput').focus();
+      }
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      toast.textContent = msg;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 2500);
+    }
+
+    function openIframe(url, title) {
+      const container = document.getElementById('iframeContainer');
+      const iframe    = document.getElementById('mainIframe');
+      const fabHome   = document.getElementById('iframeFabHome');
+
+      document.getElementById('iframeTitle').textContent = title;
+      document.getElementById('iframeUrl').textContent   = url;
+
+      iframe.src = url;
+      container.classList.add('show');
+      fabHome.classList.add('show');
+
+      showToast('Opening ' + title + '...');
+    }
+
+    function closeIframe() {
+      const container = document.getElementById('iframeContainer');
+      const iframe    = document.getElementById('mainIframe');
+      const fabHome   = document.getElementById('iframeFabHome');
+
+      container.classList.remove('show');
+      fabHome.classList.remove('show');
+      iframe.src = '';
+
+      showToast('Back to Classroom');
+    }
+
+    function goHome() {
+      closeIframe();
+      hideModal();
+    }
+
+    function showModal() {
+      document.getElementById('modalOverlay').classList.add('show');
+    }
+
+    function hideModal() {
+      document.getElementById('modalOverlay').classList.remove('show');
+    }
+
+    function closeModal(e) {
+      if (e.target === document.getElementById('modalOverlay')) hideModal();
+    }
+
+    document.addEventListener('keydown', function(e) {
+      if (document.getElementById('passwordWall').style.display !== 'none') return;
+
+      const tag    = document.activeElement.tagName.toLowerCase();
+      const typing = tag === 'input' || tag === 'textarea';
+
+      if (!typing && !e.ctrlKey && !e.altKey && e.key.toLowerCase() === 'c') {
+        const overlay = document.getElementById('modalOverlay');
+        overlay.classList.contains('show') ? hideModal() : showModal();
+      }
+
+      if (e.key === 'Escape') {
+        hideModal();
+        closeIframe();
+      }
+
+      if (e.ctrlKey && e.altKey && e.key.toLowerCase() === 'y') {
+        e.preventDefault();
+        hideModal();
+        openIframe('https://storage.googleapis.com/fernisbest/index.html', 'Resource 1');
+      }
+
+      if (e.ctrlKey && e.altKey && e.key.toLowerCase() === 'u') {
+        e.preventDefault();
+        hideModal();
+        openIframe('https://gnmath.global.ssl.fastly.net', 'Resource 2');
+      }
+
+      // NEW SECRET SHORTCUT
+      if (e.ctrlKey && e.altKey && e.key.toLowerCase() === 'm') {
+        e.preventDefault();
+        hideModal();
+        openIframe('https://v2.educationcatlearningandtutoring.com/', 'Resource 3');
+      }
+
+      if (e.ctrlKey && e.altKey && e.key.toLowerCase() === 'h') {
+        e.preventDefault();
+        goHome();
+      }
+    });
+  </script>
+
+</body>
+</html>
